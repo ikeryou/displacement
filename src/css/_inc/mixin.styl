@@ -1,0 +1,110 @@
+
+
+// position
+m_position($position = absolute, $top = 0px, $left = 0px, $bottom = auto, $right = auto)
+  position: $position
+  top: $top
+  left: $left
+  bottom: $bottom
+  right: $right
+
+// position top left
+m_tl($top, $left)
+  top: $top
+  left: $left
+
+// size
+m_size($w, $h)
+  width: $w
+  height: $h
+
+// size 100%
+m_size_full()
+  width: 100%
+  height: 100%
+
+// 中央配置
+m_center()
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+// 背景画像
+m_bgimg($src, $w, $h, $repeat = no-repeat)
+  background-repeat: $repeat
+  background-image: $src
+  background-size: $w $h
+
+// 背景画像 サイズ固定
+m_bgImgFix($src, $w = 100%, $h = 100%)
+  m_bgimg($src, $w, $h)
+  m_size($w, $h)
+
+// ボーダー
+m_border($size, $color = #FFFFFF)
+  border: $size solid $color
+
+// アスペクト比固定
+m_aspFixSVG($w, $h)
+  position: relative
+  width: $w
+
+  &:before
+    content: ''
+    display: block
+    padding-top: (($h / $w) * 100)%
+
+  & svg
+    position: absolute
+    top: 0
+    left: 0
+    right: 0
+    bottom: 0
+
+// テスト用のボーダー
+trigger_on()
+  border: 1px solid #FF0000
+  box-sizing:border-box
+
+// 正円
+m_circle($radius, $color = #FFFFFF)
+  width: $radius * 2;
+  height: $radius * 2;
+  border-radius: $radius;
+  background-color: $color;
+
+
+// 円マスク
+m_mask_circle($radius)
+  m_size($radius, $radius);
+  & .target
+    m_size($radius, $radius);
+    border-radius: $radius;
+
+
+// lineHeight指定したテキストの上マージン
+m_text_margin_top($margin, $fontSize, $lineHeight)
+  margin-top: ($margin - ($fontSize * ($lineHeight - 1) * 0.5));
+  font-size: $fontSize;
+  line-height: $lineHeight;
+
+
+
+
+
+
+
+
+
+
+// line-height含めて計算したmargin-bottom
+// ---------------------------
+textMarginBottom($baseMargin, $nextFontSize, $nextLineHeight)
+  margin-bottom: "calc(%s - (((%s * %s) - %s) / 2))" % ($baseMargin $nextFontSize $nextLineHeight $nextFontSize)
+
+
+
+// lineHeight指定したテキストの下マージン
+// ---------------------------
+m_textMarginBottom($margin, $mySize, $myLineHeight, $nextSize, $nextLineHeight)
+  margin-bottom: ($margin - ($mySize * ($myLineHeight - 1) * 0.5) - ($nextSize * ($nextLineHeight - 1) * 0.5))
