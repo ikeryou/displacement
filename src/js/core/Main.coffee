@@ -24,7 +24,6 @@ class Main
 
     canvas = new MovieCanvas({
       el:$('.test')
-      src:'./assets/movie/test.mp4'
     })
     canvas.init()
 

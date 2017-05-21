@@ -125,6 +125,7 @@ class Canvas extends MyDisplay
       premultipliedAlpha : true
     })
     @renderer.autoClear = true
+    @renderer.setClearColor(0xece9eb)
 
     if Util.isSafari() || Util.isFF()
       @renderer.context.getShaderInfoLog = =>

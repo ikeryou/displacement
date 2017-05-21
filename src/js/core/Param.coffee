@@ -13,14 +13,17 @@ class Param
 
     #
     @mask = {
-      shapeNum:{value:70, min:2, max:100}
-      strength:{value:15, min:0, max:100}
-      noise:{value:12, min:0, max:100}
+      shapeNum:{value:18, min:2, max:100}
+      strength:{value:0, min:0, max:100}
+      noise:{value:200, min:0, max:200}
       rotation:{value:45, min:-180, max:180}
       offsetX:{value:150, min:0, max:200}
       offsetY:{value:100, min:0, max:200}
       showMask:{value:false}
-      isBlank:{value:false}
+      showDiffuse0:{value:false}
+      showDiffuse1:{value:false}
+      moveRG:{value:false, flg:true}
+      moveB:{value:true, flg:true}
     }
 
     @listen = {
@@ -54,14 +57,15 @@ class Param
   _addGui: (obj) =>
 
     for key,val of obj
-      if key.indexOf('Color') > 0
-        g = @_gui.addColor(val, 'value').name(key)
-      else
-        if val.list?
-          g = @_gui.add(val, 'value', val.list).name(key)
+      if !val.flg?
+        if key.indexOf('Color') > 0
+          g = @_gui.addColor(val, 'value').name(key)
         else
-          g = @_gui.add(val, 'value', val.min, val.max).name(key)
-      val.gui = g
+          if val.list?
+            g = @_gui.add(val, 'value', val.list).name(key)
+          else
+            g = @_gui.add(val, 'value', val.min, val.max).name(key)
+        val.gui = g
 
 
 
