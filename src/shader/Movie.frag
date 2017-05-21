@@ -31,12 +31,20 @@ void main(void) {
 
     if(showDiffuse0 == false && showDiffuse1 == false) {
 
-      vec2 offset = vec2(mask.r, mask.g) * strength * 0.01;
-      vec2 uv = fract(vUv + offset * vec2(offsetX * 0.01, offsetY * 0.01));
+    //  vec2 offset = vec2(mask.r) * strength * 0.01;
+      //vec2 uv = fract(vUv + offset * vec2(offsetX * 0.01, offsetY * 0.01));
 
-      vec4 dest0 = texture2D(tDiffuse0, uv);
-      vec4 dest1 = texture2D(tDiffuse1, uv);
-      vec4 dest = dest0 * mask.b + dest1 * (1.0 - mask.b);
+      vec4 dest0 = texture2D(tDiffuse0, vUv);
+      vec4 dest1 = texture2D(tDiffuse1, vUv);
+
+
+      mask.a = 1.0;
+      vec4 dest = dest0 * mask + dest1 * (1.0 - mask);
+
+
+
+      //dest.rgb = dest0.rgb * mask.rgb + dest1.rgb * (1.0 - mask.rgb);
+      // dest.rgb *= dest0.rgb * mask.a + dest1.rgb * (1.0 - mask.a);
 
       gl_FragColor = dest;
 

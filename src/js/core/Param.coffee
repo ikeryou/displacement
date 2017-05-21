@@ -13,17 +13,16 @@ class Param
 
     #
     @mask = {
-      shapeNum:{value:18, min:2, max:100}
-      strength:{value:0, min:0, max:100}
-      noise:{value:200, min:0, max:200}
-      rotation:{value:45, min:-180, max:180}
-      offsetX:{value:150, min:0, max:200}
-      offsetY:{value:100, min:0, max:200}
+      shapeNum:{value:100, min:2, max:100}
+      strength:{value:0, min:0, max:100, flg:true}
+      noise:{value:30, min:0, max:200}
+      rotation:{value:45, min:-180, max:180, flg:true}
+      offsetX:{value:150, min:0, max:200, flg:true}
+      offsetY:{value:100, min:0, max:200, flg:true}
       showMask:{value:false}
       showDiffuse0:{value:false}
       showDiffuse1:{value:false}
-      moveRG:{value:false, flg:true}
-      moveB:{value:true, flg:true}
+      moveRGB:{value:true}
     }
 
     @listen = {

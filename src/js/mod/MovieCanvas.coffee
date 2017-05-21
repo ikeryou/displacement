@@ -100,14 +100,14 @@ class MovieCanvas extends Canvas
     @_cap[2].add(@_light[1])
 
     i = 0
-    num = 20
+    num = 10
     while i < num
 
       mesh0 = new THREE.Mesh(
         # new THREE.BoxBufferGeometry(1,1,1),
         new THREE.DodecahedronBufferGeometry(0.5,0),
         new THREE.MeshPhongMaterial({
-          color:0xed6557
+          color:0xefde6d
           # emissive: 0xffffff
           shading: THREE.FlatShading
         })
@@ -120,8 +120,9 @@ class MovieCanvas extends Canvas
         # new THREE.BoxBufferGeometry(1,1,1)
         # new THREE.DodecahedronBufferGeometry(0.5,0.5),
         new THREE.DodecahedronBufferGeometry(0.5,0),
+        # new THREE.OctahedronBufferGeometry(0.5,0),
         new THREE.MeshPhongMaterial({
-          color:0x53c0f1
+          color:0x52b380
           # emissive: 0x000000
           shading: THREE.FlatShading
         })
@@ -185,22 +186,25 @@ class MovieCanvas extends Canvas
     # @_mask.rotation.z = Util.radian(Param.mask.rotation.value)
     #@_mask.rotation.z = Util.radian(Param.mask.rotation.value)
     radian = @_time * 0.0001
-    @_mask.rotation.z = Math.sin(radian) * 45
+    # @_mask.rotation.x = Math.sin(radian * 1.0) * 45
+    # @_mask.rotation.y = Math.cos(radian * 0.9) * 45
+    @_mask.rotation.z = Math.sin(radian * 1.1) * 45
 
     # 色更新
     for val,i in @_mask.children
       col = val.material.color
       radian = i * (Param.mask.noise.value * 0.01) + @_time * 0.1
-      if Param.mask.moveRG.value
+      if Param.mask.moveRGB.value
         col.r = Util.map(Math.sin(radian * 0.9), 0, 1, -1, 1)
         col.g = Util.map(Math.cos(radian * 0.7), 0, 1, -1, 1)
-      else
-        col.r = 0
-        col.g = 0
-      if Param.mask.moveB.value
         col.b = Util.map(Math.sin(radian * 0.75), 0, 1, -1, 1)
+        col.a = Util.map(Math.sin(radian * 0.55), 0, 1, -1, 1)
       else
+        col.r = i % 2
+        col.g = i % 2
         col.b = i % 2
+        col.a = i % 2
+
 
 
     for val,i in @_mesh0
@@ -216,12 +220,12 @@ class MovieCanvas extends Canvas
       )
 
       radian1 = Util.radian(@_speed[1])
-      mesh1.rotation.set(
-        Math.sin(radian1 * 1.0) * 45,
-        Math.cos(radian1 * 0.9) * 45,
-        Math.sin(radian1 * 1.2) * 45
-      )
-      #mesh1.rotation.copy(mesh0.rotation)
+      # mesh1.rotation.set(
+      #   Math.sin(radian1 * 1.0) * 45,
+      #   Math.cos(radian1 * 0.9) * 45,
+      #   Math.sin(radian1 * 1.2) * 45
+      # )
+      mesh1.rotation.copy(mesh0.rotation)
 
 
     for val,i in @_cap
@@ -262,12 +266,12 @@ class MovieCanvas extends Canvas
     for val,i in @_mask.children
       if w > h
         sx = size / @_mask.children.length
-        val.scale.set(sx, size, 1)
+        val.scale.set(sx, size, sx)
         val.position.x = i * sx + (sx * 0.5) - (@_mask.children.length * sx * 0.5)
         val.position.y = 0
       else
         sy = size / @_mask.children.length
-        val.scale.set(size, sy, 1)
+        val.scale.set(size, sy, sy)
         val.position.x = 0
         val.position.y = i * sy + (sy * 0.5) - (@_mask.children.length * sy * 0.5)
 
@@ -326,8 +330,10 @@ class MovieCanvas extends Canvas
       color.b = (i % 2)
       shape = new THREE.Mesh(
         new THREE.PlaneBufferGeometry(1,1),
+        # new THREE.BoxBufferGeometry(1,1,1),
         new THREE.MeshBasicMaterial({
           color:color
+          transparent:true
         })
       )
       @_shapes.push(shape)
