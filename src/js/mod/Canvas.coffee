@@ -118,11 +118,11 @@ class Canvas extends MyDisplay
     @renderer = new THREE.WebGLRenderer({
       # canvas             : document.getElementById(@el().attr('id'))
       canvas             : @el().get(0)
-      alpha              : true
-      antialias          : true
+      alpha              : false
+      antialias          : false
       stencil            : false
       depth              : false
-      premultipliedAlpha : true
+      premultipliedAlpha : false
     })
     @renderer.autoClear = true
     @renderer.setClearColor(0xe9ddd5)

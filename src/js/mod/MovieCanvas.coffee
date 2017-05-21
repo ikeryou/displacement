@@ -41,8 +41,8 @@ class MovieCanvas extends Canvas
     # 浮動小数点数テクスチャ有効に
     @renderer.extensions.get('OES_texture_float')
 
-    @_light[0] = new THREE.PointLight(0xffffff, 1, 0)
-    @_light[1] = new THREE.PointLight(0xffffff, 1, 0)
+    # @_light[0] = new THREE.PointLight(0xffffff, 1, 0)
+    # @_light[1] = new THREE.PointLight(0xffffff, 1, 0)
 
     # 0..マスク
     # 1..キューブ
@@ -57,8 +57,6 @@ class MovieCanvas extends Canvas
     # マスクにつかうMesh
     @_mask = new THREE.Object3D()
     @_cap[0].add(@_mask)
-
-    @_makeTg()
 
     # 出力用メッシュ
     @_dest = new THREE.Mesh(
@@ -77,13 +75,14 @@ class MovieCanvas extends Canvas
           showDiffuse1  : Param.mask.showDiffuse1
           offsetX    : Param.mask.offsetX
           offsetY    : Param.mask.offsetY
+          kake    : Param.mask.kake
         }
       })
     )
     @mainScene.add(@_dest)
 
     Param.mask.shapeNum.gui.onFinishChange((val) =>
-      @_makeShapeMesh(val)
+      @_resize()
     )
     @_makeShapeMesh(Param.mask.shapeNum.value)
 
@@ -96,73 +95,139 @@ class MovieCanvas extends Canvas
   # -----------------------------------------------
   _makeTg: =>
 
-    @_cap[1].add(@_light[0])
-    @_cap[2].add(@_light[1])
+    # @_cap[1].add(@_light[0])
+    # @_cap[2].add(@_light[1])
+
+    @_disposeTg()
+
+    @_speed[0] = 0
+    @_speed[1] = 0
+
+    # size = Math.sqrt(movW * movW + movH * movH)
+    # for val,i in @_mask.children
+    #   if w > h
+    #     sx = size / @_mask.children.length
+    #     val.scale.set(sx, size, sx)
+    #     val.position.x = i * sx + (sx * 0.5) - (@_mask.children.length * sx * 0.5)
+    #     val.position.y = 0
+    #   else
+
+    @_cap[1].rotation.z = Util.radian(45)
+    @_cap[2].rotation.z = Util.radian(-45)
+
+    w = window.innerWidth
+    h = window.innerHeight
+    movW = movH = Math.max(w, h)
+    size = Math.sqrt(movW * movW + movH * movH)
 
     i = 0
-    num = 10
+    num = ~~(Param.mask.shapeNum.value)
     while i < num
 
-      mesh0 = new THREE.Mesh(
-        # new THREE.BoxBufferGeometry(1,1,1),
-        new THREE.DodecahedronBufferGeometry(0.5,0),
-        new THREE.MeshPhongMaterial({
-          color:0xefde6d
-          # emissive: 0xffffff
-          shading: THREE.FlatShading
-        })
-      )
-      @_cap[1].add(mesh0)
-      @_mesh0.push(mesh0)
-      @_speed[0] = 0
+      mesh0 = @_makeBasinMesh([0x537e74,0xdc6043][i%2], @_cap[1], @_mesh0)
+      mesh1 = @_makeBasinMesh([0x3d6fa0,0xf3c239][i%2], @_cap[2], @_mesh1)
 
-      mesh1 = new THREE.Mesh(
-        # new THREE.BoxBufferGeometry(1,1,1)
-        # new THREE.DodecahedronBufferGeometry(0.5,0.5),
-        new THREE.DodecahedronBufferGeometry(0.5,0),
-        # new THREE.OctahedronBufferGeometry(0.5,0),
-        new THREE.MeshPhongMaterial({
-          color:0x52b380
-          # emissive: 0x000000
-          shading: THREE.FlatShading
-        })
-      )
-      @_cap[2].add(mesh1)
-      @_mesh1.push(mesh1)
-      @_speed[1] = 0
+      sy = size / num
+      mesh0.scale.set(size, sy, sy)
+      mesh0.position.x = 0
+      mesh0.position.y = i * sy + (sy * 0.5) - (num * sy * 0.5)
+
+      mesh1.scale.copy(mesh0.scale)
+      mesh1.position.copy(mesh0.position)
 
       i++
 
 
+    @_cap[1].render(@renderer, @camera[1])
+    @_cap[2].render(@renderer, @camera[1])
 
 
-   # -----------------------------------------------
-  # マスクかけるテクスチャ
+
+    # radius = 0
+    # max = Math.min(window.innerWidth, window.innerHeight)
+    # interval = max * 0.1
+    # scale = interval * 0.5
+    # while radius < max
+    #
+    #   circ = radius * 2 * Math.PI
+    #   num = ~~(circ / 40)
+    #   i = 0
+    #   while i < num
+    #
+    #     mesh0 = @_makeBasinMesh(0xefde6d, @_cap[1], @_mesh0)
+    #     mesh1 = @_makeBasinMesh(0x52b380, @_cap[2], @_mesh1)
+    #
+    #     radian0 = Util.radian(360 / num * i)
+    #     radian1 = Util.radian(90 + 360 / num * i)
+    #
+    #     mesh0.position.set(
+    #       Math.sin(radian0) * radius,
+    #       Math.cos(radian0) * radius,
+    #       0
+    #     )
+    #
+    #     mesh1.position.set(
+    #       Math.sin(radian1) * (radius + interval * 0.5),
+    #       Math.cos(radian1) * (radius + interval * 0.5),
+    #       0
+    #     )
+    #
+    #     mesh0.scale.set(scale * 2, scale * 0.5, 1)
+    #     mesh0.rotation.z = 45
+    #
+    #     mesh1.scale.copy(mesh0.scale)
+    #     #mesh1.position.copy(mesh0.position)
+    #     mesh1.rotation.copy(mesh0.rotation)
+    #
+    #     i++
+    #
+    #   radius += interval
+    #
+    # console.log(@_mesh0.length)
+
+
+
   # -----------------------------------------------
-  _makeDestTex: =>
+  #
+  # -----------------------------------------------
+  _disposeTg: =>
 
-    @_video = document.createElement('video')
-    @_video.loop = true
+    for val,i in @_mesh0
+      @_cap[1].remove(val)
+      val.geometry.dispose()
+      val.material.dispose()
+    @_mesh0 = []
 
-    tex = new THREE.VideoTexture(@_video)
-    tex.minFilter = tex.magFilter = THREE.LinearFilter
-    tex.format = THREE.RGBFormat
-    tex.generateMipmaps = false
+    for val,i in @_mesh1
+      @_cap[2].remove(val)
+      val.geometry.dispose()
+      val.material.dispose()
+    @_mesh1 = []
 
-    @_video.addEventListener('loadeddata', (e) =>
-      @_resize()
+
+
+  # -----------------------------------------------
+  #
+  # -----------------------------------------------
+  _makeBasinMesh: (color, scene, list) =>
+
+
+    color = new THREE.Color(color)
+    #color.lerp(new THREE.Color(0x000000), Util.random(0, 1))
+
+    mesh = new THREE.Mesh(
+      # new THREE.DodecahedronBufferGeometry(0.5,0),
+      # new THREE.PlaneBufferGeometry(1,1),
+      new THREE.PlaneBufferGeometry(1,1),
+      new THREE.MeshBasicMaterial({
+        color:color
+      })
     )
 
-    if isMobile.any
-      @_video.preload  = 'none'
-      @_video.autoplay = false
-      @_video.src      = @_src
-      @_video.load()
-    else
-      @_video.src = '/assets/movie/test.mp4'
-      @_video.play()
+    scene.add(mesh)
+    list.push(mesh)
 
-    return tex
+    return mesh
 
 
 
@@ -185,20 +250,20 @@ class MovieCanvas extends Canvas
 
     # @_mask.rotation.z = Util.radian(Param.mask.rotation.value)
     #@_mask.rotation.z = Util.radian(Param.mask.rotation.value)
-    radian = @_time * 0.0001
+    radian = @_time * 0.01
     # @_mask.rotation.x = Math.sin(radian * 1.0) * 45
     # @_mask.rotation.y = Math.cos(radian * 0.9) * 45
-    @_mask.rotation.z = Math.sin(radian * 1.1) * 45
+    @_mask.rotation.z = Util.radian(Func.sin2(radian * 1.1) * 45)
 
     # 色更新
     for val,i in @_mask.children
       col = val.material.color
-      radian = i * (Param.mask.noise.value * 0.01) + @_time * 0.1
+      radian = i * (Param.mask.noise.value * 0.001) + @_time * 0.05
       if Param.mask.moveRGB.value
         col.r = Util.map(Math.sin(radian * 0.9), 0, 1, -1, 1)
         col.g = Util.map(Math.cos(radian * 0.7), 0, 1, -1, 1)
         col.b = Util.map(Math.sin(radian * 0.75), 0, 1, -1, 1)
-        col.a = Util.map(Math.sin(radian * 0.55), 0, 1, -1, 1)
+        # col.a = Util.map(Math.sin(radian * 0.55), 0, 1, -1, 1)
       else
         col.r = i % 2
         col.g = i % 2
@@ -207,29 +272,47 @@ class MovieCanvas extends Canvas
 
 
 
-    for val,i in @_mesh0
 
-      mesh0 = val
-      mesh1 = @_mesh1[i]
 
-      radian0 = Util.radian(@_speed[0])
-      mesh0.rotation.set(
-        Math.sin(radian0 * 1.0) * 45,
-        Math.cos(radian0 * 0.9) * 45,
-        Math.sin(radian0 * 1.2) * 45
-      )
-
-      radian1 = Util.radian(@_speed[1])
-      # mesh1.rotation.set(
-      #   Math.sin(radian1 * 1.0) * 45,
-      #   Math.cos(radian1 * 0.9) * 45,
-      #   Math.sin(radian1 * 1.2) * 45
-      # )
-      mesh1.rotation.copy(mesh0.rotation)
+    # for val,i in @_mesh0
+    #
+    #   mesh0 = val
+    #   mesh1 = @_mesh1[i]
+    #
+    #   radian0 = Util.radian(@_speed[0])
+    #   mesh0.rotation.set(
+    #     Math.sin(radian0 * 1.0) * 45,
+    #     Math.cos(radian0 * 0.9) * 45,
+    #     Math.sin(radian0 * 1.2) * 45
+    #   )
+    #
+    #   radian1 = Util.radian(@_speed[1])
+    #   # mesh1.rotation.set(
+    #   #   Math.sin(radian1 * 1.0) * 45,
+    #   #   Math.cos(radian1 * 0.9) * 45,
+    #   #   Math.sin(radian1 * 1.2) * 45
+    #   # )
+    #   mesh1.rotation.copy(mesh0.rotation)
 
 
     for val,i in @_cap
-      val.render(@renderer, @camera[1])
+      if i == 0
+        val.render(@renderer, @camera[1])
+
+    # @_cap[0].render(@renderer, @camera[1])
+    #
+    # if @_time % 2 == 0 then @_cap[1].render(@renderer, @camera[1])
+    # if @_time % 2 != 0 then @_cap[2].render(@renderer, @camera[1])
+
+  #  @_cap[1].rotation.z += 0.005
+  #  @_cap[2].rotation.z -= 0.005
+
+    #
+    # for val,i in @_cap
+    #   if i == 0
+    #     val.render(@renderer, @camera[1])
+    #   else
+    #     if
 
     @renderer.render(@mainScene, @camera[0])
 
@@ -243,6 +326,8 @@ class MovieCanvas extends Canvas
     w = window.innerWidth
     h = window.innerHeight
 
+    # movW = w
+    # movH = h
     movW = movH = Math.max(w, h)
 
     @_dest.scale.set(movW, movH, 1)
@@ -254,60 +339,32 @@ class MovieCanvas extends Canvas
     @renderer.setSize(w, h)
     @renderer.clear()
 
-    @_resizeMaskTg()
 
-    @_light[0].position.set(0, movW * 2, movW * 2)
-    @_light[1].position.set(0, -movW * 2, movW * 2)
+
+    # @_light[0].position.set(0, movW * 2, movW * 2)
+    # @_light[1].position.set(0, -movW * 2, movW * 2)
 
     for val,i in @_cap
       val.size(movW, movH)
 
-    size = Math.sqrt(movW * movW + movH * movH)
-    for val,i in @_mask.children
-      if w > h
-        sx = size / @_mask.children.length
-        val.scale.set(sx, size, sx)
-        val.position.x = i * sx + (sx * 0.5) - (@_mask.children.length * sx * 0.5)
-        val.position.y = 0
-      else
-        sy = size / @_mask.children.length
-        val.scale.set(size, sy, sy)
-        val.position.x = 0
-        val.position.y = i * sy + (sy * 0.5) - (@_mask.children.length * sy * 0.5)
+    @_makeTg()
+    @_makeShapeMesh(Param.mask.shapeNum.value)
+
+    # size = Math.sqrt(movW * movW + movH * movH)
+    # for val,i in @_mask.children
+    #   if w > h
+    #     sx = size / @_mask.children.length
+    #     val.scale.set(sx, size, sx)
+    #     val.position.x = i * sx + (sx * 0.5) - (@_mask.children.length * sx * 0.5)
+    #     val.position.y = 0
+    #   else
+    #     sy = size / @_mask.children.length
+    #     val.scale.set(size, sy, sy)
+    #     val.position.x = 0
+    #     val.position.y = i * sy + (sy * 0.5) - (@_mask.children.length * sy * 0.5)
 
 
 
-  # -----------------------------------------------
-  # マスクかけるやつリサイズ
-  # -----------------------------------------------
-  _resizeMaskTg: =>
-
-    w = window.innerWidth
-    h = window.innerHeight
-
-    for val,i in @_mesh0
-
-      mesh0 = val
-      mesh1 = @_mesh1[i]
-
-      p = new THREE.Vector3(
-        Util.random(-w * 0.5, w * 0.5),
-        Util.random(-h * 0.5, h * 0.5),
-        0
-      )
-
-      s = Math.min(w, h) * Util.random(0.2, 0.5)
-      mesh0.scale.set(s, s, s)
-      mesh1.scale.set(s, s, s)
-
-      mesh0.position.copy(p)
-
-      p = new THREE.Vector3(
-        Util.random(-w * 0.5, w * 0.5),
-        Util.random(-h * 0.5, h * 0.5),
-        0
-      )
-      mesh1.position.copy(p)
 
 
 
@@ -323,24 +380,60 @@ class MovieCanvas extends Canvas
       val.material.dispose()
     @_shapes = []
 
+
+    w = window.innerWidth
+    h = window.innerHeight
+    movW = movH = Math.max(w, h)
+    size = Math.sqrt(movW * movW + movH * movH)
+
+    @_mask.rotation.z = Util.radian(45)
+
     i = 0
-    num = ~~(num)
+    num = ~~(Param.mask.shapeNum.value)
     while i < num
-      color = new THREE.Color()
-      color.b = (i % 2)
-      shape = new THREE.Mesh(
-        new THREE.PlaneBufferGeometry(1,1),
-        # new THREE.BoxBufferGeometry(1,1,1),
+
+      mesh = new THREE.Mesh(
+        new THREE.PlaneBufferGeometry(1, 1),
         new THREE.MeshBasicMaterial({
-          color:color
-          transparent:true
+          color:0x000000
         })
       )
-      @_shapes.push(shape)
-      @_mask.add(shape)
+
+      @_shapes.push(mesh)
+      @_mask.add(mesh)
+
+      sy = size / num
+      mesh.scale.set(size, sy, sy)
+      mesh.position.x = 0
+      mesh.position.y = i * sy + (sy * 0.5) - (num * sy * 0.5)
+
       i++
 
-    @_resize()
+    # max = Math.max(window.innerWidth, window.innerHeight) * 0.5
+    #
+    # i = 0
+    # num = ~~(num)
+    # while i <= num
+    #
+    #   radius = max - (i * (max / num))
+    #   shape = new THREE.Mesh(
+    #     new THREE.CircleBufferGeometry(radius, 16),
+    #     new THREE.MeshBasicMaterial({
+    #       color:0x000000
+    #       # blending:THREE.MultiplyBlending
+    #     })
+    #   )
+    #   @_shapes.push(shape)
+    #   @_mask.add(shape)
+    #
+    #
+    #
+    #   i++
+
+
+    # @_mask.children.reverse()
+
+
 
 
 
